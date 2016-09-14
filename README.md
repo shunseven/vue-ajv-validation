@@ -69,7 +69,7 @@ new Vue({
       <span class="help-block">{{ validateError.name }}</span>
     </p>
     <p>
-      <label for="name">family</label>梨
+      <label for="name">family</label>
       <p v-for="item in user.family">
          <input type="text" v-model="item">
         <span class="help-block">{{ validateError.family[$index] }}</span>

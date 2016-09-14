@@ -1,42 +1,4 @@
 {
-  "_args": [
-    [
-      "vue-ajv-validation",
-      "/Users/seven/Desktop/vis/vue-ajv-validationdemo"
-    ]
-  ],
-  "_from": "vue-ajv-validation@*",
-  "_id": "vue-ajv-validation@1.0.0",
-  "_inCache": true,
-  "_installable": true,
-  "_location": "/vue-ajv-validation",
-  "_nodeVersion": "6.4.0",
-  "_npmOperationalInternal": {
-    "host": "packages-16-east.internal.npmjs.com",
-    "tmp": "tmp/vue-ajv-validation-1.0.0.tgz_1473761600756_0.9340251283720136"
-  },
-  "_npmUser": {
-    "email": "shunseven@outlook.com",
-    "name": "shunseven"
-  },
-  "_npmVersion": "3.10.3",
-  "_phantomChildren": {},
-  "_requested": {
-    "name": "vue-ajv-validation",
-    "raw": "vue-ajv-validation",
-    "rawSpec": "",
-    "scope": null,
-    "spec": "*",
-    "type": "range"
-  },
-  "_requiredBy": [
-    "#USER"
-  ],
-  "_resolved": "https://registry.npmjs.org/vue-ajv-validation/-/vue-ajv-validation-1.0.0.tgz",
-  "_shasum": "212da52bd12f3afba35847bffea08772fb00d12c",
-  "_shrinkwrap": null,
-  "_spec": "vue-ajv-validation",
-  "_where": "/Users/seven/Desktop/vis/vue-ajv-validationdemo",
   "author": {
     "name": "shunseven@outlook.com"
   },
@@ -53,31 +15,13 @@
   "directories": {
     "test": "test"
   },
-  "dist": {
-    "shasum": "212da52bd12f3afba35847bffea08772fb00d12c",
-    "tarball": "https://registry.npmjs.org/vue-ajv-validation/-/vue-ajv-validation-1.0.0.tgz"
-  },
-  "files": [
-    "dist",
-    "src"
-  ],
   "keywords": [
     "validation"
   ],
-  "license": "ISC",
   "main": "index.js",
-  "maintainers": [
-    {
-      "name": "shunseven",
-      "email": "shunseven@outlook.com"
-    }
-  ],
   "name": "vue-ajv-validation",
-  "optionalDependencies": {},
-  "readme": "ERROR: No README data found!",
   "scripts": {
-    "dev": "webpack-dev-server --progress --profile --colors --hot --host=0.0.0.0 --port 9000",
-    "test": "mocha"
+    "dev": "webpack -w"
   },
-  "version": "1.0.2"
+  "version": "1.0.4"
 }
