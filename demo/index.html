@@ -7,12 +7,18 @@
 </head>
 <body>
     <div id="app">
-        <p>
-            <input type="name" v-model="user.name">
-            {{validateError.name}}
+        <p v-for='item in user.name.items'>
+            <input type="name" v-model="item" number>
+            {{validateError.user.name.items[$index]}}
+
         </p>
         <p>
-
+              <input type="age" v-model="user.age" number>
+              {{validateError.user.age}}
+        </p>
+        <p v-for='item in goods'>
+            <input type="text" number v-model="item.price">{{validateError.goods[$index].price}}
+            <input type="text" number v-model="item.num">{{validateError.goods[$index].num}}
         </p>
     </div>
     <script src="demo.js"></script>

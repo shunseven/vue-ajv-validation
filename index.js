@@ -3,8 +3,38 @@
  */
 import Ajv from 'ajv/dist/ajv.bundle.js'
 
-export const minix = {
-    data: function () {
+class ValidateCrtl {
+    constructor(validates) {
+        this.validates = validates;
+        this.vms = {};
+        this.targets = Object.keys(validates);
+        this.validators = {};
+        //init
+    }
+    getVms(vm) {
+        this.targets.forEach(key => {
+            this.vms[key] = vm.$get(key);
+        })
+    }
+    setValidators(fn) {
+        this.targets.forEach(item => {
+            let validate = this.validates[item];
+            let schema = validate.schema;
+            let validator = validate.validator;
+            if (schema) {
+                this.validators[item] = fn(schema);
+            } else {
+                if (typeof validator === 'function') {
+                    this.validators[item] = validator();
+                }
+            }
+        })
+    }
+}
+
+
+let mixin = {
+    data() {
         return {
             validateState: {},
             validateError: {}
@@ -13,97 +43,114 @@ export const minix = {
     created() {
         const ajv = new Ajv({ allErrors: true });
         const vm = this;
-        const option = this.$options.validate;
-        if (!option) return;
-        const target = option.target;
-        const vmTarget = vm.$get(target);
-        const labels = option.labels;
-        let validator = option.validator;
-        const schema = option.schema;
+        const validates = this.$options.validate;
+        if (!validates) return;
+        const validateCrtl = new ValidateCrtl(validates);
+        validateCrtl.getVms(vm);
+        validateCrtl.setValidators(ajv.compile);
 
-        // schema 优先于 validator
-        if (schema) {
-            console.log(schema);
-            validator = ajv.compile(schema);
-        } else {
-            if (typeof validator === 'function') {
-                validator = validator();
-            }
-        }
+        // validateCrtl.targets.forEach(target => {
+        //     vm.$set(`validateState.${target}`, {});
+        //     vm.$set(`validateError.${target}`, {});
+        // });
 
-        vm.$validator = validator;
-
-        function setObjectPathValue(object, path, value) {
-            const pathAry = path.replace(']', '').replace('[', '.').split('.');
+        function setObjectPathValue(obj, path, value) {
+            console.log(value);
+            let pathAry = path.replace(']', '').replace('[', '.').split('.');
+            pathAry = pathAry.filter(item => item);
             pathAry.forEach((item, i) => {
                 if (pathAry.length - 1 == i) {
-                    object[item] = value;
+                    obj[item] = value;
                 }
-                object = object[item];
+                obj = obj[item];
             })
         }
 
-        function getObjectPathValue(object, path) {
-            const pathAry = path.replace(']', '').replace('[', '.').split('.');
-            let value = '';
-            pathAry.forEach((item, i) => {
-                if (pathAry.length - 1 == i) {
-                    value = object[item];
-                }
-            })
-            return value;
-        }
 
-        function setValidateValue(itemProp, error) {
+        // function getObjectPathValue(object, path) {
+        //     const pathAry = path.replace(']', '').replace('[', '.').split('.');
+        //     let value = '';
+        //     pathAry.forEach((item, i) => {
+        //         if (pathAry.length - 1 == i) {
+        //             value = object[item];
+        //         }
+        //     });
+        //     return value;
+        // }
+
+        function setValidateValue(itemProp, target, error) {
+
             if (error) {
-                setObjectPathValue(vm.validateState, itemProp, false);
-                setObjectPathValue(vm.validateError, itemProp, error);
+                setObjectPathValue(vm.validateState[target], itemProp, false);
+                setObjectPathValue(vm.validateError[target], itemProp, error);
             } else {
-                setObjectPathValue(vm.validateState, itemProp, true);
-                setObjectPathValue(vm.validateError, itemProp, "");
+                setObjectPathValue(vm.validateState[target], itemProp, true);
+                setObjectPathValue(vm.validateError[target], itemProp, "");
             }
 
         }
 
-        function initValidateProp(watchExp, prop) {
+        function addProp(pre, next) {
+            if (next.split('')[0] == '[') {
+                return pre + next;
+            }
+
+            return pre + '.' + next;
+        }
+
+        function initValidateProp(watchExp, target, prop) {
+            let validator = validateCrtl.validators[target];
+            let vmTarget = validateCrtl.vms[target];
             Object.keys(watchExp).forEach(function (key) {
                 let itemProp = '';
                 if (prop) {
                     if (Array.isArray(watchExp)) {
                         itemProp = prop + '[' + key + ']';
                     } else {
+
                         itemProp = prop + '.' + key
                     }
 
                 } else {
-                    itemProp = key;
+                    itemProp = Array.isArray(watchExp) ? `[${key}]` : key;
                 }
-
                 if (typeof watchExp[key] == 'object') {
-                    return initValidateProp(watchExp[key], itemProp);
+                    return initValidateProp(watchExp[key], target, itemProp);
                 }
-                vm.$watch(target + '.' + itemProp, function () {
+                vm.$watch(addProp(target, itemProp), function () {
                     validator(vmTarget);
-                    console.log(validator.errors);
-                    if (!validator.errors) return setValidateValue(itemProp, '');
+                    console.log('errors', validator.errors)
+                    if (!validator.errors) return setValidateValue(itemProp, target, '');
                     let hasError = validator.errors.some(error => {
-                        if (error.dataPath == `.${itemProp}`) {
-                            setValidateValue(itemProp, error.message)
+                        if (error.dataPath == addProp('', itemProp)) {
+                            setValidateValue(itemProp, target, error.message);
                         }
-                        return error.dataPath == `.${itemProp}`;
-                    })
+                        return error.dataPath == addProp('', itemProp);
+                    });
                     if (!hasError) {
-                        setValidateValue(itemProp, '')
+                        setValidateValue(itemProp, target, '')
                     }
-                })
-                vm.$set(`validateState.${itemProp}`, true)
-                vm.$set(`validateError.${itemProp}`, '')
+                });
+                console.log(addProp(target, itemProp))
+                vm.$set(`validateState.${addProp(target, itemProp)}`, true);
+                vm.$set(`validateError.${addProp(target, itemProp)}`, '');
+
             })
         }
-        initValidateProp(vmTarget, '');
+        Object.keys(validateCrtl.vms).forEach(target => {
+            console.log();
+            initValidateProp(validateCrtl.vms[target], target, '');
+        })
+
     }
 }
 
-export default function (Vue, options) {
-    Vue.minix(minix);
+function install(Vue) {
+    Vue.mixins(mixin);
+
+}
+
+export default {
+    mixin,
+    install
 }

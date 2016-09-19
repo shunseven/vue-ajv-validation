@@ -1,22 +1,58 @@
 import Vue from 'vue';
-import Validation from '../index';
+import validate from '../index';
 
 new Vue({
-    mixins:[Validation],
+    mixins:[validate.mixin],
     validate:{
-        schema:{
+       user:{
+            schema:{
             properties:{
                 name:{
+                    properties:{
+                        items:{
+                            items:{
+                                type:'number'
+                            }
+                        }
+                    }
+                },
+                age:{
                     type:'number'
                 }
             }
-        },
-        target:"user"
+        }
+       },
+       goods:{
+           schema:{
+               type:'array',
+               items:[
+                   {
+                       properties:{
+                       price:{
+                           type:'number'
+                       },
+                       num:{
+                           type:'number'
+                       }
+                   }
+                   }
+               ]
+           }
+       }
     },
     el: '#app',
     data: {
         user: {
-            name:'33'
-        }
+            name:{
+                items:['333']
+            },
+            age:22
+        },
+        goods:[
+            {
+                price:33,
+                num:33
+            }
+        ],
     }
 })
