@@ -2,7 +2,7 @@
  * Created by seven.zhong on 2016/9/5.
  */
 import Ajv from 'ajv/dist/ajv.bundle.js'
-
+import localize from './ch_cn.js';
 class ValidateCrtl {
     constructor(validates) {
         this.validates = validates;
@@ -119,9 +119,11 @@ let mixin = {
                 }
                 vm.$watch(addProp(target, itemProp), function () {
                     validator(vmTarget);
-                    console.log('errors', validator.errors)
+                    
+                    let errors= localize(validator.errors) ;
+                    console.log('errors',localize);
                     if (!validator.errors) return setValidateValue(itemProp, target, '');
-                    let hasError = validator.errors.some(error => {
+                    let hasError =errors.some(error => {
                         if (error.dataPath == addProp('', itemProp)) {
                             setValidateValue(itemProp, target, error.message);
                         }
